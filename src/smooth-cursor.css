@@ -1,0 +1,12 @@
+.smooth-cursor {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  pointer-events: none;
+}
+
+@media (max-width: 767px), (pointer: coarse), (hover: none), (prefers-reduced-motion: reduce) {
+  .smooth-cursor { display: none; }
+}
