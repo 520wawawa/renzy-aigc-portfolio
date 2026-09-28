@@ -7,6 +7,46 @@
   pointer-events: none;
 }
 
+.smooth-cursor-icon {
+  --smooth-cursor-size: 48px;
+  position: fixed;
+  z-index: 101;
+  width: var(--smooth-cursor-size);
+  height: var(--smooth-cursor-size);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(-100px, -100px, 0);
+  transition: opacity 120ms ease;
+  will-change: transform, opacity;
+}
+
+.smooth-cursor-icon::after {
+  position: absolute;
+  inset: -7px;
+  border: 1px solid rgba(229, 36, 33, .9);
+  border-radius: 50%;
+  content: '';
+  opacity: 0;
+}
+
+.smooth-cursor-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .28);
+}
+
+.smooth-cursor-icon.is-visible { opacity: 1; }
+.smooth-cursor-icon.is-clicking::after { animation: smooth-cursor-click 360ms cubic-bezier(.16, 1, .3, 1); }
+
+@keyframes smooth-cursor-click {
+  0% { transform: scale(.55); opacity: .9; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
 @media (max-width: 767px), (pointer: coarse), (hover: none), (prefers-reduced-motion: reduce) {
-  .smooth-cursor { display: none; }
+  .smooth-cursor, .smooth-cursor-icon { display: none; }
 }

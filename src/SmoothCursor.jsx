@@ -3,9 +3,11 @@ import './smooth-cursor.css'
 
 export default function SmoothCursor() {
   const canvasRef = useRef(null)
+  const iconRef = useRef(null)
 
   useEffect(() => {
     const canvas = canvasRef.current
+    const icon = iconRef.current
     const context = canvas.getContext('2d')
     if (!context) return
 
@@ -17,6 +19,28 @@ export default function SmoothCursor() {
     let target = { x: 0, y: 0 }
     let width = 0
     let height = 0
+    let clickTimer = 0
+
+    const scheduleIconHide = (delay = 340) => {
+      window.clearTimeout(clickTimer)
+      clickTimer = window.setTimeout(hideIcon, delay)
+    }
+
+    const setIcon = (variant, event) => {
+      if (!icon || !event) return
+      if (icon.dataset.variant !== variant) {
+        icon.dataset.variant = variant
+        icon.firstElementChild.src = `${import.meta.env.BASE_URL}images/cursor/${variant}.png`
+      }
+      icon.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0) translate(-50%, -50%)`
+      icon.classList.add('is-visible')
+      icon.classList.toggle('is-clicking', variant === 'click')
+    }
+
+    const hideIcon = () => {
+      window.clearTimeout(clickTimer)
+      icon?.classList.remove('is-visible', 'is-clicking')
+    }
 
     const stop = () => {
       window.cancelAnimationFrame(frame)
@@ -24,6 +48,7 @@ export default function SmoothCursor() {
       lastFrame = 0
       points = []
       context.clearRect(0, 0, width, height)
+      hideIcon()
     }
 
     const resize = () => {
@@ -81,15 +106,32 @@ export default function SmoothCursor() {
         stop()
         return
       }
+      // Show the directional style as soon as the pointer moves, so the
+      // custom cursor is visible without requiring the visitor to hold a click.
+      setIcon(event.clientX < target.x ? 'drag-left' : 'drag-right', event)
+      if (!event.buttons) scheduleIconHide()
       target = { x: event.clientX, y: event.clientY }
       if (!points.length) points = Array.from({ length: 24 }, () => ({ ...target }))
       lastMove = performance.now()
       if (!frame) frame = window.requestAnimationFrame(draw)
     }
+    const down = (event) => {
+      if (!media.matches || document.hidden || event.pointerType !== 'mouse') return
+      if (event.target.closest('input, textarea, select, [contenteditable="true"], video[controls]')) return
+      setIcon('click', event)
+      window.clearTimeout(clickTimer)
+    }
+    const up = () => {
+      if (!icon?.classList.contains('is-visible')) return
+      window.clearTimeout(clickTimer)
+      clickTimer = window.setTimeout(hideIcon, 520)
+    }
     const leave = (event) => { if (!event.relatedTarget) stop() }
 
     resize()
     window.addEventListener('pointermove', move, { passive: true })
+    window.addEventListener('pointerdown', down, { passive: true })
+    window.addEventListener('pointerup', up, { passive: true })
     window.addEventListener('pointerout', leave)
     window.addEventListener('blur', stop)
     window.addEventListener('resize', resize)
@@ -100,6 +142,8 @@ export default function SmoothCursor() {
     return () => {
       stop()
       window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerdown', down)
+      window.removeEventListener('pointerup', up)
       window.removeEventListener('pointerout', leave)
       window.removeEventListener('blur', stop)
       window.removeEventListener('resize', resize)
@@ -110,5 +154,5 @@ export default function SmoothCursor() {
     }
   }, [])
 
-  return <canvas ref={canvasRef} className="smooth-cursor" aria-hidden="true" />
+  return <><canvas ref={canvasRef} className="smooth-cursor" aria-hidden="true" /><span ref={iconRef} className="smooth-cursor-icon" aria-hidden="true"><img alt="" /></span></>
 }
