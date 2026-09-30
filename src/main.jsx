@@ -42,7 +42,7 @@ const strengths = [
 ]
 
 const personalWorks = [
-  { category: 'AI VIDEO', title: 'AI 视频案例', detail: 'TVC 视频 / 产品视频 / 短剧视频', image: 'ai-video-examples.png', width: 937, height: 1678 },
+  { category: 'AI VIDEO', title: 'AI 视频案例', detail: 'TVC 视频 / 产品视频 / 短剧视频', image: 'ai-video-examples.png', width: 937, height: 1678, link: 'https://anmaai.cn/video.html' },
   { category: 'AIGC DESIGN', title: 'AIGC 课程案例', detail: '课程视觉 / AIGC 创作 / 教学案例', image: 'aigc-design-examples.png', width: 934, height: 1684 },
   { category: 'FEED VIDEO', title: '信息流视频案例', detail: '投放视频 / 宣传视频 / 营销视频', image: 'feed-video-examples.png', width: 963, height: 1633 },
 ]
@@ -398,7 +398,13 @@ function App() {
       <div className="personal-works-heading"><p className="micro-label">PERSONAL WORKS</p><h2 id="personal-works-title" data-motion-title>个人作品 <Arrow /></h2></div>
       <div className="personal-works-grid">{personalWorks.map((work, index) => {
         const isActive = activePersonalWork === index
-        return <button type="button" className={`personal-work${isActive ? ' is-active' : ''}`} data-motion-card aria-pressed={isActive} onClick={() => setActivePersonalWork(index)} key={work.title}>
+        return <button type="button" className={`personal-work${isActive ? ' is-active' : ''}`} data-motion-card aria-pressed={isActive} onClick={(event) => {
+          if (work.link && event.target.closest('.personal-work-image')) {
+            window.location.assign(work.link)
+            return
+          }
+          setActivePersonalWork(index)
+        }} key={work.title}>
           <span className="personal-work-image"><img data-reveal-image src={`${assetBase}images/personal-works/${work.image}`} width={work.width} height={work.height} loading="lazy" decoding="async" alt={work.title} /></span>
           <span className="personal-work-copy"><small>{work.category}</small><strong>{work.title}<Arrow /></strong><em>{work.detail}</em></span>
         </button>
